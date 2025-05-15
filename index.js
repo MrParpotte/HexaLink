@@ -60,20 +60,18 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
+    if (interaction.isCommand()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({ content: '❌ Erreur lors de l\'exécution de la commande.', ephemeral: true });
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: '❌ Erreur lors de l\'exécution de la commande.', ephemeral: true });
+        }
     }
-});
 
-client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
         const index = parseInt(interaction.customId.split('_')[1]);
         if (!gameActive || board[index] !== null) {

@@ -5,6 +5,10 @@ const {
     GatewayIntentBits,
     EmbedBuilder,
     ActivityType,
+    SlashCommandBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     Collection
 } = require('discord.js');
 

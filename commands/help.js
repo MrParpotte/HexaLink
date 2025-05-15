@@ -12,9 +12,9 @@ module.exports = {
       .setDescription('Voici la liste des commandes disponibles :')
       .addFields(
         { name: '🎉 Communauté', value: '`/blague`, `/sondage`' },
-        { name: '🎮 Jeux & Mini-jeux', value: '`?dé`, `?duel`, `/devine`, `?8ball`' },
+        { name: '🎮 Jeux & Mini-jeux', value: '`?dé`, `?duel`, `/devine`, `?8ball`, `/morpion`' },
         { name: '🧠 Utilitaire', value: '`/ping`' },
-        { name: '🤖 Modération', value: '/`ban`,`/kick`' },
+        { name: '🤖 Modération', value: '/`ban`, `/kick`' },
         { name: 'ℹ️ Infos', value: '`/help`' },
       )
       .setFooter({ text: 'Utilise les commandes dans un canal autorisé.' })

@@ -186,7 +186,7 @@ client.on('interactionCreate', async interaction => {
             if (checkVictory()) {
                 gameActive = false;
                 return interaction.update({
-                    content: `⭕ HexaLink a gagné !`,
+                    content: `⭕ Bot a gagné !`,
                     components: creeGrilleBoutons()
                 });
             }

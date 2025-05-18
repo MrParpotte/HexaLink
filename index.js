@@ -1,14 +1,6 @@
 require('dotenv').config();
 
-const {
-    Client,
-    GatewayIntentBits,
-    ActivityType,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    Collection
-} = require('discord.js');
+const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, Collection } = require('discord.js');
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -57,12 +49,114 @@ client.once('ready', async () => {
     setInterval(updateStatus, 15 * 1000);
 });
 
+let board = Array(9).fill(null);
+let playerTurn = '❌';
+let gameActive = false;
+let isSolo = false;
+
+function creeGrilleBoutons() {
+    return [
+        new ActionRowBuilder().addComponents(
+            ...[0, 1, 2].map(i => new ButtonBuilder()
+                .setCustomId(`morpion_${i}`)
+                .setLabel(board[i] ?? (i + 1).toString())
+                .setStyle(ButtonStyle.Primary))
+        ),
+        new ActionRowBuilder().addComponents(
+            ...[3, 4, 5].map(i => new ButtonBuilder()
+                .setCustomId(`morpion_${i}`)
+                .setLabel(board[i] ?? (i + 1).toString())
+                .setStyle(ButtonStyle.Primary))
+        ),
+        new ActionRowBuilder().addComponents(
+            ...[6, 7, 8].map(i => new ButtonBuilder()
+                .setCustomId(`morpion_${i}`)
+                .setLabel(board[i] ?? (i + 1).toString())
+                .setStyle(ButtonStyle.Primary))
+        )
+    ];
+}
+
+function checkVictory() {
+    const wins = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ];
+    return wins.some(([a, b, c]) =>
+        board[a] && board[a] === board[b] && board[a] === board[c]
+    );
+}
+
+function choisirCoupBot() {
+    for (let i = 0; i < 9; i++) {
+        if (board[i] === null) {
+            board[i] = '⭕';
+            if (checkVictory()) {
+                board[i] = null;
+                return i;
+            }
+            board[i] = null;
+        }
+    }
+
+    for (let i = 0; i < 9; i++) {
+        if (board[i] === null) {
+            board[i] = '❌';
+            if (checkVictory()) {
+                board[i] = null;
+                return i;
+            }
+            board[i] = null;
+        }
+    }
+
+    const coupsLibres = board
+        .map((val, idx) => (val === null ? idx : null))
+        .filter(val => val !== null);
+
+    return coupsLibres[Math.floor(Math.random() * coupsLibres.length)];
+}
+
+for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    if ('data' in command && 'execute' in command) {
+        client.commands.set(command.data.name, command);
+    }
+}
+
+// Gestion des interactions
 client.on('interactionCreate', async interaction => {
+    if (interaction.isChatInputCommand()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
+        try {
+            if (interaction.commandName === 'morpion') {
+                // reset jeu
+                board = Array(9).fill(null);
+                playerTurn = '❌';
+                gameActive = true;
+                isSolo = true;
+
+                await interaction.reply({
+                    content: `🎮 Morpion solo lancé ! C'est à ${playerTurn} de jouer.`,
+                    components: creeGrilleBoutons()
+                });
+            } else {
+                await command.execute(interaction);
+            }
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: '❌ Erreur.', ephemeral: true });
+        }
+    }
+
     if (interaction.isButton()) {
         const index = parseInt(interaction.customId.split('_')[1]);
 
         if (!gameActive || board[index] !== null) {
-            return interaction.deferUpdate(); // ne rien faire
+            return interaction.deferUpdate();
         }
 
         board[index] = playerTurn;
@@ -85,7 +179,6 @@ client.on('interactionCreate', async interaction => {
 
         playerTurn = playerTurn === '❌' ? '⭕' : '❌';
 
-        // Tour du bot
         if (isSolo && playerTurn === '⭕') {
             const botMove = choisirCoupBot();
             board[botMove] = '⭕';
@@ -101,7 +194,7 @@ client.on('interactionCreate', async interaction => {
             if (board.every(cell => cell !== null)) {
                 gameActive = false;
                 return interaction.update({
-                    content: '🤝 Match nul !',
+                    content: "🤝 Match nul !",
                     components: []
                 });
             }
@@ -113,18 +206,6 @@ client.on('interactionCreate', async interaction => {
             content: `C'est à ${playerTurn} de jouer.`,
             components: creeGrilleBoutons()
         });
-    }
-
-    // Autres interactions : commandes, etc.
-    if (interaction.isChatInputCommand()) {
-        const command = client.commands.get(interaction.commandName);
-        if (!command) return;
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: '❌ Erreur lors de l\'exécution.', ephemeral: true });
-        }
     }
 });
 

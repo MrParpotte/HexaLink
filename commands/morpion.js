@@ -1,68 +1,50 @@
-client.on('interactionCreate', async interaction => {
-    if (interaction.isChatInputCommand()) {
-        const command = client.commands.get(interaction.commandName);
-        if (!command) return;
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: '❌ Erreur lors de l\'exécution de la commande.', ephemeral: true });
-        }
-    }
+let board = Array(9).fill(null);
+let playerTurn = '❌';
+let gameActive = false;
+let isSolo = false;
 
-    if (interaction.isButton()) {
-        const index = parseInt(interaction.customId.split('_')[1]);
-        if (!gameActive || board[index] !== null) {
-            return interaction.reply({ content: "❌ Case invalide.", ephemeral: true });
-        }
+function creeGrilleBoutons() {
+    return [
+        new ActionRowBuilder().addComponents(
+            ...[0, 1, 2].map(i => new ButtonBuilder()
+                .setCustomId(`morpion_${i}`)
+                .setLabel(board[i] ?? (i + 1).toString())
+                .setStyle(ButtonStyle.Primary))
+        ),
+        new ActionRowBuilder().addComponents(
+            ...[3, 4, 5].map(i => new ButtonBuilder()
+                .setCustomId(`morpion_${i}`)
+                .setLabel(board[i] ?? (i + 1).toString())
+                .setStyle(ButtonStyle.Primary))
+        ),
+        new ActionRowBuilder().addComponents(
+            ...[6, 7, 8].map(i => new ButtonBuilder()
+                .setCustomId(`morpion_${i}`)
+                .setLabel(board[i] ?? (i + 1).toString())
+                .setStyle(ButtonStyle.Primary))
+        )
+    ];
+}
 
-        board[index] = playerTurn;
-
-        if (checkVictory()) {
-            gameActive = false;
-            return interaction.update({
-                content: `🎉 ${playerTurn} a gagné !`,
-                components: []
-            });
-        }
-
-        if (board.every(cell => cell !== null)) {
-            gameActive = false;
-            return interaction.update({
-                content: "🤝 Match nul !",
-                components: []
-            });
-        }
-
-        playerTurn = playerTurn === '❌' ? '⭕' : '❌';
-
-        if (isSolo && playerTurn === '⭕') {
-            const botMove = choisirCoupBot();
-            board[botMove] = '⭕';
-
-            if (checkVictory()) {
-                gameActive = false;
-                await interaction.editReply({
-                    content: `⭕ (bot) a gagné !`,
-                    components: creeGrilleBoutons()
-                });
-                return;
-            } else if (board.every(cell => cell !== null)) {
-                gameActive = false;
-                await interaction.editReply({
-                    content: `🤝 Match nul !`,
-                    components: creeGrilleBoutons()
-                });
-                return;
-            }
-
-            playerTurn = '❌';
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('morpion')
+        .setDescription('Lance une partie de morpion en solo contre le bot'),
+    async execute(interaction) {
+        if (gameActive) {
+            return interaction.reply({ content: '❌ Une partie est déjà en cours.', ephemeral: true });
         }
 
-        await interaction.update({
-            content: `C'est à ${playerTurn} de jouer.`,
+        board = Array(9).fill(null);
+        playerTurn = '❌';
+        gameActive = true;
+        isSolo = true;
+
+        await interaction.reply({
+            content: `🎮 Morpion solo lancé ! C'est à ${playerTurn} de jouer.`,
             components: creeGrilleBoutons()
         });
     }
-});
+};

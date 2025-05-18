@@ -34,7 +34,11 @@ module.exports = {
         .setDescription('Lance une partie de morpion en solo contre le bot'),
     async execute(interaction) {
         if (gameActive) {
-            return interaction.reply({ content: '❌ Une partie est déjà en cours.', ephemeral: true });
+            return interaction.reply({
+                content: "❌ Une partie est déjà en cours.",
+                flags: 1 << 6
+            });
+
         }
 
         board = Array(9).fill(null);

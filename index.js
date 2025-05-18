@@ -141,7 +141,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
         const index = parseInt(interaction.customId.split('_')[1]);
         if (!gameActive || board[index] !== null) {
-            return interaction.reply({ content: "❌ Case invalide.", ephemeral: true });
+            return interaction.deferUpdate();
         }
 
         board[index] = playerTurn;

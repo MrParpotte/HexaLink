@@ -25,12 +25,12 @@ const GUILD_ID = process.env.GUILD_ID;
 
 (async () => {
   try {
-    console.log(`🧹 Suppression des anciennes commandes de guilde...`);
+    console.log(`🧹 Suppression des anciennes commandes de serveur...`);
     await rest.put(
       Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: [] }
     );
-    console.log(`✅ Anciennes commandes supprimées.`);
+    console.log(`✅ Anciennes commandes supprimées avec succès.`);
 
     console.log(`🚀 Déploiement des commandes globales (${commands.length})...`);
     await rest.put(

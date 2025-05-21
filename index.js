@@ -209,55 +209,6 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-client.on('messageCreate', message => {
-    if (message.author.bot) return;
-
-    const content = message.content.toLowerCase();
-
-    if (content.startsWith('?dé')) {
-        const args = content.split(' ');
-        let faces = parseInt(args[1]) || 6;
-        if (faces < 1) faces = 6;
-
-        const resultat = Math.floor(Math.random() * faces) + 1;
-        message.channel.send(`🎲 Tu as lancé un dé à ${faces} faces : **${resultat}**`);
-    }
-
-    if (content.startsWith('?duel')) {
-        const opponent = message.mentions.users.first();
-        if (!opponent || opponent.id === message.author.id) {
-            return message.channel.send("❗ Mentionne un adversaire valide pour le duel : `?duel @pseudo`");
-        }
-
-        const gagnant = Math.random() < 0.5 ? message.author : opponent;
-        message.channel.send(`⚔️ ${message.author} défie ${opponent}... et le gagnant est **${gagnant}** !`);
-    }
-
-    if (message.content.startsWith('?8ball')) {
-        const question = message.content.slice(6).trim();
-
-        if (!question) {
-            return message.reply("Tu dois poser une question pour que je puisse y répondre !");
-        }
-
-        const réponses = [
-            "Oui, clairement.",
-            "Non, sûrement pas.",
-            "Peut-être bien que oui, peut-être bien que non...",
-            "Je ne pense pas.",
-            "C’est certain.",
-            "Demande plus tard.",
-            "J’ai des doutes.",
-            "Absolument !",
-            "Nope.",
-            "Tu connais déjà la réponse."
-        ];
-
-        const aléatoire = réponses[Math.floor(Math.random() * réponses.length)];
-        return message.reply(`🎱 ${aléatoire}`);
-    }
-});
-
 setInterval(() => console.log(`✅ ${client.user.tag} REDEMARRAGE...`), 60_000);
 
 client.login(process.env.DISCORD_TOKEN);

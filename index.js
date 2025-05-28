@@ -49,52 +49,6 @@ client.once('ready', async () => {
     setInterval(updateStatus, 15 * 1000);
 });
 
-function generateCaptcha() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
-client.on('guildMemberAdd', async member => {
-    const config = db.get(`captcha_${member.guild.id}`);
-    if (!config || !config.enabled) return;
-
-    const channel = member.guild.channels.cache.get(config.channel);
-    if (!channel) return;
-
-    const captcha = generateCaptcha();
-    db.set(`captcha_code_${member.id}`, captcha);
-
-    const embed = new EmbedBuilder()
-        .setColor('Yellow')
-        .setTitle('🔐 Vérification CAPTCHA')
-        .setDescription(`Bienvenue ${member}! Merci de prouver que tu n'es pas un robot.\n\n**Recopie ce code dans ce salon :**\n\`${captcha}\``)
-        .setFooter({ text: 'Tu as 2 minutes pour répondre.' });
-
-    channel.send({ content: `<@${member.id}>`, embeds: [embed] });
-
-    const filter = m => m.author.id === member.id;
-    const collector = channel.createMessageCollector({ filter, time: 120000 });
-
-    collector.on('collect', async msg => {
-        if (msg.content === captcha) {
-            const role = member.guild.roles.cache.get(config.role);
-            if (role) await member.roles.remove(role).catch(() => null);
-            channel.send(`✅ Bienvenue ${member}, tu es maintenant vérifié.`);
-            db.delete(`captcha_code_${member.id}`);
-            collector.stop('réussi');
-        } else {
-            msg.reply('❌ Mauvais code, essaie encore.');
-        }
-    });
-
-    collector.on('end', (_, reason) => {
-        if (reason !== 'réussi') {
-            db.delete(`captcha_code_${member.id}`);
-            channel.send(`<@${member.id}> temps écoulé. Rejoins à nouveau pour réessayer.`);
-        }
-    });
-});
-
 let board = Array(9).fill(null);
 let playerTurn = '❌';
 let gameActive = false;

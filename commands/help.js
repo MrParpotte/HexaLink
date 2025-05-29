@@ -14,7 +14,7 @@ module.exports = {
         { name: '🎉 Communauté', value: '`/blague`, `/sondage`' },
         { name: '🎮 Jeux & Mini-jeux', value: ' `/devine`, `/morpion`' },
         { name: '🧠 Utilitaire', value: '`/ping`' },
-        { name: '🤖 Modération', value: '/`ban`, `/kick`' },
+        { name: '🤖 Modération', value: '`/ban`, `/kick`, `/captcha on`, `/captcha off`' },
         { name: 'ℹ️ Infos', value: '`/help`' },
       )
       .setFooter({ text: 'Utilise les commandes dans un canal autorisé.' })

@@ -1,11 +1,12 @@
-// commands/captchaOn.js
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const db = require('quick.db');
+const { QuickDB } = require('quick.db');
+const db = new QuickDB();
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('captcha')
-        .setDescription('Configuration du système captcha')
+        .setDescription('Configurer le système de captcha')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addSubcommand(sub =>
             sub.setName('on')
                 .setDescription('Activer le captcha')
@@ -15,14 +16,11 @@ module.exports = {
                         .setRequired(true))
                 .addRoleOption(opt =>
                     opt.setName('role')
-                        .setDescription('Rôle à donner si le captcha est réussi')
-                        .setRequired(true))
-        )
+                        .setDescription('Rôle à attribuer après le captcha')
+                        .setRequired(true)))
         .addSubcommand(sub =>
             sub.setName('off')
-                .setDescription('Désactiver le captcha')
-        )
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+                .setDescription('Désactiver le captcha')),
 
     async execute(interaction) {
         const sub = interaction.options.getSubcommand();
@@ -31,17 +29,17 @@ module.exports = {
             const salon = interaction.options.getChannel('salon');
             const role = interaction.options.getRole('role');
 
-            db.set(`captcha_${interaction.guild.id}`, {
+            await db.set(`captcha_${interaction.guild.id}`, {
                 channelId: salon.id,
                 roleId: role.id
             });
 
-            await interaction.reply(`✅ Captcha activé ! Salon : ${salon}, Rôle : ${role}`);
+            await interaction.reply(`✅ Captcha activé !\nSalon : ${salon}\nRôle : ${role}`);
         }
 
         if (sub === 'off') {
-            db.delete(`captcha_${interaction.guild.id}`);
-            await interaction.reply(`❌ Système de captcha désactivé.`);
+            await db.delete(`captcha_${interaction.guild.id}`);
+            await interaction.reply('❌ Système de captcha désactivé.');
         }
     }
 };

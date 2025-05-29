@@ -31,13 +31,13 @@ module.exports = {
             await member.kick(reason);
             await interaction.reply({
                 content: `✅ ${user.tag} a été expulsé.\n📝 Raison : ${reason}`,
-                ephemeral: false,
+                flags: 1 << 6 // éphemère
             });
         } catch (err) {
             console.error(err);
             await interaction.reply({
                 content: '❌ Une erreur est survenue lors de l’expulsion.',
-                ephemeral: true,
+                flags: 1 << 6 // éphemère
             });
         }
     }

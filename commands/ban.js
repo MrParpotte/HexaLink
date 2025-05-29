@@ -30,17 +30,16 @@ module.exports = {
         }
 
         try {
-            await member.ban({ reason });
-
+            await member.kick(reason);
             await interaction.reply({
                 content: `✅ ${user.tag} a été banni.\n📝 Raison : ${reason}`,
-                ephemeral: false,
+                flags: 1 << 6 // éphemère
             });
         } catch (err) {
             console.error(err);
             await interaction.reply({
                 content: '❌ Une erreur est survenue lors du bannissement.',
-                ephemeral: true,
+                flags: 1 << 6 // éphemère
             });
         }
     }

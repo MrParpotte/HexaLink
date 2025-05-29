@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ActivityType, Events, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ActivityType, Events, Collection, ChannelType } = require('discord.js');
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -48,36 +48,6 @@ client.once('ready', async () => {
     updateStatus();
     setInterval(updateStatus, 15 * 1000);
 });
-
-const db = require('quick.db');
-
-module.exports = {
-    name: 'guildMemberAdd',
-    async execute(member) {
-        const settings = db.get(`captcha_${member.guild.id}`);
-        if (!settings) return;
-
-        const channel = member.guild.channels.cache.get(settings.channelId);
-        const role = member.guild.roles.cache.get(settings.roleId);
-        if (!channel || !role) return;
-
-        // Exemple simple de captcha texte
-        const code = Math.random().toString(36).substring(2, 8);
-
-        const filter = m => m.author.id === member.id && m.content === code;
-
-        await channel.send(`<@${member.id}> Veuillez résoudre ce captcha : \`${code}\` (vous avez 60 secondes)`);
-
-        channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
-            .then(() => {
-                member.roles.add(role).catch(console.error);
-                channel.send(`✅ <@${member.id}> a réussi le captcha !`);
-            })
-            .catch(() => {
-                channel.send(`❌ <@${member.id}> n'a pas réussi le captcha à temps.`);
-            });
-    }
-};
 
 let board = Array(9).fill(null);
 let playerTurn = '❌';
@@ -237,6 +207,10 @@ client.on('interactionCreate', async interaction => {
             components: creeGrilleBoutons()
         });
     }
+});
+
+client.on('guildMemberAdd', member => {
+    require('./events/guildMemberAdd.js').execute(member);
 });
 
 setInterval(() => console.log(`✅ ${client.user.tag} REDEMARRAGE...`), 60_000);
